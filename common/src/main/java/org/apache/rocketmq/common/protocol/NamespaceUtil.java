@@ -92,10 +92,12 @@ public class NamespaceUtil {
         String resourceWithoutRetryAndDLQ = withOutRetryAndDLQ(resourceWithOutNamespace);
         StringBuffer strBuffer = new StringBuffer();
 
+        // 重试队列
         if (isRetryTopic(resourceWithOutNamespace)) {
             strBuffer.append(MixAll.RETRY_GROUP_TOPIC_PREFIX);
         }
 
+        // 死信队列
         if (isDLQTopic(resourceWithOutNamespace)) {
             strBuffer.append(MixAll.DLQ_GROUP_TOPIC_PREFIX);
         }
