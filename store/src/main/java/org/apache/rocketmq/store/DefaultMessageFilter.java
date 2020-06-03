@@ -31,15 +31,20 @@ public class DefaultMessageFilter implements MessageFilter {
 
     @Override
     public boolean isMatchedByConsumeQueue(Long tagsCode, ConsumeQueueExt.CqExtUnit cqExtUnit) {
+        // 消息tagsCode 空
         if (null == tagsCode || null == subscriptionData) {
             return true;
         }
 
+        // classFilter
         if (subscriptionData.isClassFilterMode()) {
             return true;
         }
 
+        // 订阅表达式 全匹配
         return subscriptionData.getSubString().equals(SubscriptionData.SUB_ALL)
+
+                // 订阅数据code数组 是否包含 消息tagsCode
             || subscriptionData.getCodeSet().contains(tagsCode.intValue());
     }
 
