@@ -135,6 +135,11 @@ public abstract class RebalanceImpl {
         return result;
     }
 
+    /**
+     * 请求Broker获得指定消息队列的分布式锁
+     * @param mq mq 队列
+     * @return 是否成功
+     */
     public boolean lock(final MessageQueue mq) {
         FindBrokerResult findBrokerResult = this.mQClientFactory.findBrokerAddressInSubscribe(mq.getBrokerName(), MixAll.MASTER_ID, true);
         if (findBrokerResult != null) {
@@ -144,8 +149,10 @@ public abstract class RebalanceImpl {
             requestBody.getMqSet().add(mq);
 
             try {
+                // 请求Broker获得指定消息队列的分布式锁
                 Set<MessageQueue> lockedMq =
                     this.mQClientFactory.getMQClientAPIImpl().lockBatchMQ(findBrokerResult.getBrokerAddr(), requestBody, 1000);
+                // 设置消息处理队列锁定成功。锁定消息队列成功，可能本地没有消息处理队列，设置锁定成功会在lockAll()方法。
                 for (MessageQueue mmqq : lockedMq) {
                     ProcessQueue processQueue = this.processQueueTable.get(mmqq);
                     if (processQueue != null) {
@@ -398,10 +405,12 @@ public abstract class RebalanceImpl {
         }
 
         // 增加 不在processQueueTable && 存在于mqSet 里的消息队列
-        List<PullRequest> pullRequestList = new ArrayList<PullRequest>(); // 拉消息请求数组
+        List<PullRequest> pullRequestList = new ArrayList<PullRequest>();
+        // 拉消息请求数组
         for (MessageQueue mq : mqSet) {
             if (!this.processQueueTable.containsKey(mq)) {
                 if (isOrder && !this.lock(mq)) {
+                    // 顺序消息锁定消息队列
                     log.warn("doRebalance, {}, add a new mq failed, {}, because lock failed", consumerGroup, mq);
                     continue;
                 }
