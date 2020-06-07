@@ -723,7 +723,11 @@ public class CommitLog {
                 if (service.isSlaveOK(result.getWroteOffset() + result.getWroteBytes())) {
                     GroupCommitRequest request = new GroupCommitRequest(result.getWroteOffset() + result.getWroteBytes());
                     service.putRequest(request);
+                    // 唤醒WriteSocketService
+                    // 唤醒后，WriteSocketService 挂起等待新消息结束，Master 传输 Slave 新的 CommitLog 数据。
                     service.getWaitNotifyObject().wakeupAll();
+
+                    // Slave 收到数据后，立即上报最新的 CommitLog 同步进度到 Master。ReadSocketService 唤醒
                     boolean flushOK =
                         request.waitForFlush(this.defaultMessageStore.getMessageStoreConfig().getSyncFlushTimeout());
                     if (!flushOK) {
