@@ -201,6 +201,8 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
         // 设置消息不等待存储完成
         msgExt.setWaitStoreMsgOK(false);
 
+        // 处理 delayLevel（独有）,用于Consumer 消费消息失败后，要提供一种重试机制，令消息再消费一次。
+        // Consumer 将消费失败的消息发回 Broker，进入延迟消息队列。即，消费失败的消息，不会立即消费
         int delayLevel = requestHeader.getDelayLevel();
 
         int maxReconsumeTimes = subscriptionGroupConfig.getRetryMaxTimes();
