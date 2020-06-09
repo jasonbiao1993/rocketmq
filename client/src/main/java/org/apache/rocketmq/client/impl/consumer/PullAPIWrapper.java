@@ -241,6 +241,7 @@ public class PullAPIWrapper {
             requestHeader.setExpressionType(expressionType);
 
             String brokerAddr = findBrokerResult.getBrokerAddr();
+            // 若订阅topic使用过滤类，使用filtersrv获取消息
             if (PullSysFlag.hasClassFilterFlag(sysFlagInner)) {
                 brokerAddr = computPullFromWhichFilterServer(mq.getTopic(), brokerAddr);
             }
@@ -280,6 +281,17 @@ public class PullAPIWrapper {
         return MixAll.MASTER_ID;
     }
 
+    /**
+     * 一个 Filtersrv 只对应一个 Broker
+     * 一个 Broker 可以对应多个 Filtersrv。Filtersrv 的高可用通过启动多个 Filtersrv 实现。
+     * Filtersrv 注册失败时，主动退出关闭。
+     *
+     * computPullFromWhichFilterServer
+     * @param topic Topic
+     * @param brokerAddr broker地址
+     * @return filtersrv地址
+     * @throws MQClientException 当filtersrv不存在时
+     */
     private String computPullFromWhichFilterServer(final String topic, final String brokerAddr)
         throws MQClientException {
         ConcurrentMap<String, TopicRouteData> topicRouteTable = this.mQClientFactory.getTopicRouteTable();

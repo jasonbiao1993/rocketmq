@@ -476,7 +476,9 @@ public class MQClientInstance {
     public void sendHeartbeatToAllBrokerWithLock() {
         if (this.lockHeartbeat.tryLock()) {
             try {
+                // 心跳机制，包活机制
                 this.sendHeartbeatToAllBroker();
+                // 发送心跳是，更新过滤类到broker
                 this.uploadFilterClassSource();
             } catch (final Exception e) {
                 log.error("sendHeartbeatToAllBroker exception", e);
@@ -587,6 +589,9 @@ public class MQClientInstance {
         }
     }
 
+    /**
+     * 上传过滤类到Filtersrv
+     */
     private void uploadFilterClassSource() {
         Iterator<Entry<String, MQConsumerInner>> it = this.consumerTable.entrySet().iterator();
         while (it.hasNext()) {
